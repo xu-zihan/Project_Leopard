@@ -391,14 +391,16 @@ x1 <- dplyr::select(cord, x,y,z)
 coordinates(x1)<- ~ x + y
 proj4string(x1) <- CRS("+proj=utm +zone=34 ellps=WGS84")
 
+plot(d1)
+plot(x1, add=T)
 
 summary(x1)
 summary(d1)
 library(sp)
+# over function get na result
 o1 <- over(d1, x1)
 
-plot(d1)
-plot(x1, add=T)
+
 
 
 
