@@ -1,5 +1,8 @@
 library(tidyverse)
 library(lubridate)
+library(car)
+library(lawstat)
+library(MuMIn)
 
 # import data
 x1 <- read.csv("BF8_Vectronix.csv")
@@ -82,11 +85,11 @@ cord0 <- data1 %>% dplyr::select(x,y,z, mean_x, mean_y)
 
 # transfer coordinates to utm structure
 library(rgdal)
-cord <- project(as.matrix(cord0[,c("x","y")]), "+proj=utm +zone=34 ellps=WGS84")
+cord <- project(as.matrix(cord0[,c("x","y")]), "+proj=utm +zone=34 +south +ellps=WGS84 +towgs84=0,0,0,-0,-0,-0,0")
 plot(cord)
 
 mean_cord <- project(as.matrix(cord0[,c("mean_x","mean_y")]),
-                     "+proj=utm +zone=34 ellps=WGS84")
+                     "+proj=utm +zone=34 +south +ellps=WGS84 +towgs84=0,0,0,-0,-0,-0,0")
 
 # add mean coordinates to cord
 cord <- data.frame(cord)
@@ -98,7 +101,7 @@ cord <- cord %>% mutate(mean_x=mean_cord$mean_x, mean_y=mean_cord$mean_y)
 # create grid pixel 
 library(raster)
 summary(cord)
-r <- raster(xmn=299123, ymn=-3803516, xmx=361431, ymx=-3620484, res=2100)
+r <- raster(xmn=299123, ymn=6196484, xmx=361431, ymx=6379516, res=2100)
 r[] <- 0
 tab <- table(cellFromXY(r, cord))
 tab
@@ -106,18 +109,11 @@ r[as.numeric(names(tab))] <- tab
 r
 plot(r)
 points(mean_cord$mean_x,mean_cord$mean_y, pch=20)
-points(xy, pch=20)
 # create dataset for amount of point in each pixel
 d <- data.frame(coordinates(r), count=r[])
 
 # x1 
 # pixel distance to central point
-data <- x1
-#----run code on top again--------------------
-mean_cord
-d <- d %>% mutate(mean_x=303007.9 , mean_y=-3787445) %>% data.frame()
-head(d)
-pointDistance(c(300173, -3621534 ), c(303007.9, -3787445), lonlat=F)
 
 dist <- function(a,b,c,d) {
   a <- pointDistance(cbind(a, b), cbind(c, d), lonlat=F)
@@ -130,7 +126,7 @@ d <- d %>% mutate(distance=dist(d$x, d$y, d$mean_x, d$mean_y))
 # funcrion for all data
 all_dist <- function(a="a") {
   cord <- filter(cord,cord$cat==a)
-  r <- raster(xmn=299123, ymn=-3803516, xmx=361431, ymx=-3620484, res=2100)
+  r <- raster(xmn=299123, ymn=6196484, xmx=361431, ymx=6379516, res=2100)
   r[] <- 0
   tab <- table(cellFromXY(r, cord))
   r[as.numeric(names(tab))] <- tab
@@ -350,17 +346,18 @@ acf(residuals(glmFit99, type="pearson"), main="glmFit88")
 
 plot(d_all$count, d_all$distance)
 
-
+# Poisson Model 
 glmFitAll <- glm(count ~ distance^2, 
                family=poisson, data=d_all)
-
+# Quasipoisson Model
 glmFitAll2 <- glm(count ~ distance^2, 
                   family=quasipoisson, data=d_all)
 
-plot(fitted(glmFitAll2))
-
+# Check the model
+car::Anova(glmFitAll2)
 summary(glmFitAll2)
 
+# NonLinearity 
 residualPlots(glmFitAll2,
               type="pearson",
               terms=~.-Phase,
@@ -373,41 +370,141 @@ residualPlots(glmFitAll2,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFitAll2, type="pearson"), main="glmFit77")
-
-#predict
-pred <- fitted(glmFitAll2)
-summary(pred)
-d_pred <- d_all %>% dplyr::select(cat, distance) %>% mutate(predict=pred)
-plot(d_pred$predict, d_pred$distance)
+# Residuals
+runs.test(residuals(glmFitAll2))
+acf(residuals(glmFitAll2, type="pearson"), main="glmFitALL2")
+plot(fitted(glmFitAll2))
 
 
-# elevation
-d1 <- dplyr::select(d1, x,y)
-coordinates(d1)<- ~ x + y
-proj4string(d1) <- CRS("+proj=utm +zone=34 ellps=WGS84")
-gridded(d1) = TRUE
-x1 <- dplyr::select(cord, x,y,z)
-coordinates(x1)<- ~ x + y
-proj4string(x1) <- CRS("+proj=utm +zone=34 ellps=WGS84")
 
-plot(d1)
-plot(x1, add=T)
-
-summary(x1)
-summary(d1)
+# Elevation
+# Import Elevation data
+library(raster)
 library(sp)
-# over function get na result
-o1 <- over(d1, x1)
+# Low resolution elevation data
+elev90 <- raster("ZA_DEM_90m_UTM34.img")
+plot(elev90)
+elev90
+new_elev <- crop(extend(elev90, r), r)
+new_elev
+r
+plot(new_elev)
+points(mean_cord$mean_x,mean_cord$mean_y, pch=20)
+
+# Landcover
+landcov <- raster("Final_2014_WC_LC.tif")
+plot(landcov)
+landcov
+new_land <- crop(extend(landcov, r), r)
+new_land
+r
+plot(new_land)
+points(mean_cord$mean_x,mean_cord$mean_y, pch=20)
+
+# Land cover data
+load("coodcovs.Rdata")
+d_all <- d_all %>% mutate(elev=coodelev) %>% mutate(landcov=coodlandcov)
 
 
+# Poisson Model with elevation
+glmFitAll3 <- glm(count ~ distance^2 + elev, 
+                 family=poisson, data=d_all)
+# Quasipoisson Model with elevation
+glmFitAll4 <- glm(count ~ distance^2 + elev, 
+                  family=quasipoisson, data=d_all)
+
+# Check the model
+car::Anova(glmFitAll4)
+summary(glmFitAll4)
+
+# NonLinearity 
+residualPlots(glmFitAll4,
+              type="pearson",
+              terms=~.-Phase,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
+
+# Residuals
+runs.test(residuals(glmFitAll4))
+acf(residuals(glmFitAll4, type="pearson"), main="glmFitALL4")
+plot(fitted(glmFitAll4))
 
 
+# Poisson Model with elevation and landcover
+glmFitAll5 <- glm(count ~ distance^2 + elev + landcov, 
+                 family=poisson, data=d_all)
+# Quasipoisson Model with elevation and landcover
+glmFitAll6 <- glm(count ~ distance^2 + elev + landcov, 
+                  family=quasipoisson, data=d_all)
+
+# Check the model
+car::Anova(glmFitAll6)
+summary(glmFitAll5)
+
+# Collinearity
+covariates <- c('distance', "elev", "landcov")
+pairs(subset(d_all, select=covariates),
+      upper.panel=NULL, pch=19, cex=0.3)
+
+car::vif(glmFitAll6)
 
 
+# NonLinearity 
+residualPlots(glmFitAll2,
+              type="pearson",
+              terms=~.-Phase,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
 
+# Residuals
+runs.test(residuals(glmFitAll6))
+acf(residuals(glmFitAll6, type="pearson"), main="glmFitALL6")
+plot(fitted(glmFitAll6))
+plot(glmFitAll6)
 
+# Model Selection
+options(na.action="na.fail")
+dredge <- head(dredge(glmFitAll5, rank="QAIC", chat=summary(glmFitAll6)$dispersion), n=10)
+Anova(glmFitAll6)
 
+deviance(glmFitAll6)
+1-pchisq(44994.07)
 
+# Predict
+test <- dplyr::select(d_all, distance, elev, landcov)
 
+predict <- predict(glmFitAll6, newdata=test, type = 'response')
+summary(predict)
+d_pred <- d_all %>% dplyr::select(cat, distance, x, y, elev, landcov, count) %>% 
+  mutate(predict=predict)
 
+# Plot comparison
+# Distance
+par(mfrow=c(1,2))
+plot(d_pred$distance, d_pred$count)
+plot(d_pred$distance, d_pred$predict)
+# Elevation
+plot(d_pred$elev, d_pred$count)
+plot(d_pred$elev, d_pred$predict)
+# Landcover
+plot(d_pred$landcov, d_pred$count)
+plot(d_pred$landcov, d_pred$predict)
+
+# Confuse Matrix
+d_pred <- d_pred %>% mutate(accuracy=ifelse(abs(count-predict)<0.5, 1, 0))
+
+sum(d_pred$accuracy==1)/23490
+sum(d_pred$accuracy==0)/23490
+isTRUE(0.1075351+0.8924649==1)
