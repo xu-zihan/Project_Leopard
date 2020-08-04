@@ -13,6 +13,7 @@ names(x1)[2] <- "time"
 x1 <- x1 %>% rename(y = Latitude, x = Longitude, z = Elevation) %>% 
   unite("daytime", date:time, remove = FALSE) %>% select(-date, -time) %>% 
   mutate(cat = "BF8", type = "dropoff_retrived") %>% drop_na(x)
+
 x1$daytime <- gsub("_", " ", x1$daytime)
 x1$daytime <- ymd_hms(x1$daytime)
 class(x1$daytime)
@@ -352,8 +353,14 @@ glmFitAll <- glm(count ~ distance^2,
 # Quasipoisson Model
 glmFitAll2 <- glm(count ~ distance^2, 
                   family=quasipoisson, data=d_all)
+# Poisson Model 
+glmFitAll3 <- glm(count ~ distance, 
+                 family=poisson, data=d_all)
+# Quasipoisson Model
+glmFitAll4 <- glm(count ~ distance, 
+                  family=quasipoisson, data=d_all)
 
-# Check the model
+# Check the model for glmFitAll2
 car::Anova(glmFitAll2)
 summary(glmFitAll2)
 
@@ -374,6 +381,30 @@ residualPlots(glmFitAll2,
 runs.test(residuals(glmFitAll2))
 acf(residuals(glmFitAll2, type="pearson"), main="glmFitALL2")
 plot(fitted(glmFitAll2))
+
+# Check the model for glmFitAll4
+car::Anova(glmFitAll4)
+summary(glmFitAll4)
+
+# NonLinearity 
+residualPlots(glmFitAll4,
+              type="pearson",
+              terms=~.-Phase,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
+
+# Residuals
+runs.test(residuals(glmFitAll4))
+acf(residuals(glmFitAll4, type="pearson"), main="glmFitALL4")
+plot(fitted(glmFitAll4))
+
+
 
 
 
@@ -407,56 +438,25 @@ d_all <- d_all %>% mutate(elev=coodelev) %>% mutate(landcov=coodlandcov)
 
 
 # Poisson Model with elevation
-glmFitAll3 <- glm(count ~ distance^2 + elev, 
+glmFitAll5 <- glm(count ~ distance^2 + elev, 
                  family=poisson, data=d_all)
 # Quasipoisson Model with elevation
-glmFitAll4 <- glm(count ~ distance^2 + elev, 
+glmFitAll6 <- glm(count ~ distance^2 + elev, 
                   family=quasipoisson, data=d_all)
 
-# Check the model
-car::Anova(glmFitAll4)
-summary(glmFitAll4)
-
-# NonLinearity 
-residualPlots(glmFitAll4,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-# Residuals
-runs.test(residuals(glmFitAll4))
-acf(residuals(glmFitAll4, type="pearson"), main="glmFitALL4")
-plot(fitted(glmFitAll4))
-
-
-# Poisson Model with elevation and landcover
-glmFitAll5 <- glm(count ~ distance^2 + elev + landcov, 
-                 family=poisson, data=d_all)
-# Quasipoisson Model with elevation and landcover
-glmFitAll6 <- glm(count ~ distance^2 + elev + landcov, 
+# Poisson Model with elevation
+glmFitAll7 <- glm(count ~ distance + elev, 
+                  family=poisson, data=d_all)
+# Quasipoisson Model with elevation
+glmFitAll8 <- glm(count ~ distance + elev, 
                   family=quasipoisson, data=d_all)
 
-# Check the model
+# Check the model for glmFitAll6
 car::Anova(glmFitAll6)
-summary(glmFitAll5)
-
-# Collinearity
-covariates <- c('distance', "elev", "landcov")
-pairs(subset(d_all, select=covariates),
-      upper.panel=NULL, pch=19, cex=0.3)
-
-car::vif(glmFitAll6)
-
+summary(glmFitAll6)
 
 # NonLinearity 
-residualPlots(glmFitAll2,
+residualPlots(glmFitAll6,
               type="pearson",
               terms=~.-Phase,
               quadratic=TRUE,
@@ -472,20 +472,112 @@ residualPlots(glmFitAll2,
 runs.test(residuals(glmFitAll6))
 acf(residuals(glmFitAll6, type="pearson"), main="glmFitALL6")
 plot(fitted(glmFitAll6))
-plot(glmFitAll6)
+
+# Check the model for glmFitAll8
+car::Anova(glmFitAll8)
+summary(glmFitAll8)
+
+# NonLinearity 
+residualPlots(glmFitAll8,
+              type="pearson",
+              terms=~.-Phase,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
+
+# Residuals
+runs.test(residuals(glmFitAll8))
+acf(residuals(glmFitAll8, type="pearson"), main="glmFitALL8")
+plot(fitted(glmFitAll8))
+
+
+# Poisson Model with elevation and landcover
+glmFitAll9 <- glm(count ~ distance^2 + elev + landcov, 
+                 family=poisson, data=d_all)
+# Quasipoisson Model with elevation and landcover
+glmFitAll10 <- glm(count ~ distance^2 + elev + landcov, 
+                  family=quasipoisson, data=d_all)
+
+# Poisson Model with elevation and landcover
+glmFitAll11 <- glm(count ~ distance + elev + landcov, 
+                  family=poisson, data=d_all)
+# Quasipoisson Model with elevation and landcover
+glmFitAll12 <- glm(count ~ distance + elev + landcov, 
+                   family=quasipoisson, data=d_all)
+
+# Check the model 10
+car::Anova(glmFitAll10)
+summary(glmFitAll10)
+
+# Collinearity
+covariates <- c('distance', "elev", "landcov")
+pairs(subset(d_all, select=covariates),
+      upper.panel=NULL, pch=19, cex=0.3)
+
+car::vif(glmFitAll10)
+
+
+# NonLinearity 
+residualPlots(glmFitAll10,
+              type="pearson",
+              terms=~.-Phase,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
+
+# Residuals
+runs.test(residuals(glmFitAll10))
+acf(residuals(glmFitAll10, type="pearson"), main="glmFitALL10")
+plot(fitted(glmFitAll10))
+plot(glmFitAll10)
+
+# Check the model 11
+car::Anova(glmFitAll12)
+summary(glmFitAll12)
+
+car::vif(glmFitAll12)
+
+
+# NonLinearity 
+residualPlots(glmFitAll12,
+              type="pearson",
+              terms=~.-Phase,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
+
+# Residuals
+runs.test(residuals(glmFitAll12))
+acf(residuals(glmFitAll12, type="pearson"), main="glmFitALL12")
+plot(fitted(glmFitAll12))
+plot(glmFitAll12)
 
 # Model Selection
 options(na.action="na.fail")
-dredge <- head(dredge(glmFitAll5, rank="QAIC", chat=summary(glmFitAll6)$dispersion), n=10)
-Anova(glmFitAll6)
+dredge <- head(dredge(glmFitAll9, rank="QAIC", chat=summary(glmFitAll10)$dispersion), n=10)
+Anova(glmFitAll10)
 
-deviance(glmFitAll6)
-1-pchisq(44994.07)
+deviance(glmFitAll10)
 
 # Predict
 test <- dplyr::select(d_all, distance, elev, landcov)
 
-predict <- predict(glmFitAll6, newdata=test, type = 'response')
+predict <- predict(glmFitAll10, newdata=test, type = 'response')
 summary(predict)
 d_pred <- d_all %>% dplyr::select(cat, distance, x, y, elev, landcov, count) %>% 
   mutate(predict=predict)
@@ -503,6 +595,7 @@ plot(d_pred$landcov, d_pred$count)
 plot(d_pred$landcov, d_pred$predict)
 
 # Confuse Matrix
+
 d_pred <- d_pred %>% mutate(accuracy=ifelse(abs(count-predict)<0.5, 1, 0))
 
 sum(d_pred$accuracy==1)/23490
