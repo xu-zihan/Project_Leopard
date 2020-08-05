@@ -151,6 +151,8 @@ d8 <- all_dist("BM5")
 d9 <- all_dist("BM7")
 
 d_all <- rbind(d1,d2,d3,d4,d5,d6,d7,d8,d9)
+
+
 # GLM model for x1
 summary(d1$count)
 glmFit1 <- glm(count ~ distance^2, 
@@ -173,7 +175,6 @@ residualPlots(glmFit11,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit11, type="pearson"), main="glmFit11")
 
 # model for x2
 glmFit2 <- glm(count ~ distance^2, 
@@ -194,7 +195,6 @@ residualPlots(glmFit2,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit2, type="pearson"), main="glmFit2")
 
 # model for x3
 glmFit3 <- glm(count ~ distance^2, 
@@ -215,7 +215,6 @@ residualPlots(glmFit33,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit33, type="pearson"), main="glmFit33")
 
 # model for x4
 glmFit4 <- glm(count ~ distance^2, 
@@ -236,7 +235,6 @@ residualPlots(glmFit44,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit44, type="pearson"), main="glmFit44")
 
 # model for x5
 glmFit5 <- glm(count ~ distance^2, 
@@ -257,7 +255,6 @@ residualPlots(glmFit55,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit55, type="pearson"), main="glmFit55")
 
 # model for x6
 glmFit6 <- glm(count ~ distance^2, 
@@ -278,7 +275,6 @@ residualPlots(glmFit6,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit6, type="pearson"), main="glmFit6")
 
 # model for x7
 glmFit7 <- glm(count ~ distance^2, 
@@ -299,7 +295,6 @@ residualPlots(glmFit77,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit77, type="pearson"), main="glmFit77")
 
 # model for x8
 glmFit8 <- glm(count ~ distance^2, 
@@ -320,7 +315,6 @@ residualPlots(glmFit88,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit88, type="pearson"), main="glmFit88")
 
 # model for x9
 glmFit9 <- glm(count ~ distance^2, 
@@ -341,7 +335,6 @@ residualPlots(glmFit99,
               cex=0.3,
               ylim=c(-5, 5))
 
-acf(residuals(glmFit99, type="pearson"), main="glmFit88")
 
 # model for all data
 
@@ -363,6 +356,7 @@ glmFitAll4 <- glm(count ~ distance,
 # Check the model for glmFitAll2
 car::Anova(glmFitAll2)
 summary(glmFitAll2)
+plot(glmFitAll2)
 
 # NonLinearity 
 residualPlots(glmFitAll2,
@@ -379,12 +373,13 @@ residualPlots(glmFitAll2,
 
 # Residuals
 runs.test(residuals(glmFitAll2))
-acf(residuals(glmFitAll2, type="pearson"), main="glmFitALL2")
-plot(fitted(glmFitAll2))
+plot(glmFitAll2)
 
 # Check the model for glmFitAll4
 car::Anova(glmFitAll4)
 summary(glmFitAll4)
+plot(glmFitAll4)
+
 
 # NonLinearity 
 residualPlots(glmFitAll4,
@@ -401,10 +396,6 @@ residualPlots(glmFitAll4,
 
 # Residuals
 runs.test(residuals(glmFitAll4))
-acf(residuals(glmFitAll4, type="pearson"), main="glmFitALL4")
-plot(fitted(glmFitAll4))
-
-
 
 
 
@@ -436,6 +427,26 @@ points(mean_cord$mean_x,mean_cord$mean_y, pch=20)
 load("coodcovs.Rdata")
 d_all <- d_all %>% mutate(elev=coodelev) %>% mutate(landcov=coodlandcov)
 
+# data plot
+# Plot for parameters with count
+plot(d_all$landcov, d_all$count, type="p")
+plot(d_all$elev, d_all$count)
+plot(d_all$distance, d_all$count)
+(unique(d_all$cat))
+
+# plot for each cat with distance
+plt_all <- function(){
+  list <- unique(d_all$cat)
+  i <- 1
+  while(i <=9) {
+    xq <- list[i]
+    data <- filter(d_all, cat==xq)
+    plot(data$distance, data$count, main=xq)
+    i <- i+1
+  }
+}
+
+plt_all()
 
 # Poisson Model with elevation
 glmFitAll5 <- glm(count ~ distance^2 + elev, 
@@ -454,6 +465,8 @@ glmFitAll8 <- glm(count ~ distance + elev,
 # Check the model for glmFitAll6
 car::Anova(glmFitAll6)
 summary(glmFitAll6)
+plot(glmFitAll6)
+
 
 # NonLinearity 
 residualPlots(glmFitAll6,
@@ -470,12 +483,13 @@ residualPlots(glmFitAll6,
 
 # Residuals
 runs.test(residuals(glmFitAll6))
-acf(residuals(glmFitAll6, type="pearson"), main="glmFitALL6")
-plot(fitted(glmFitAll6))
+
 
 # Check the model for glmFitAll8
 car::Anova(glmFitAll8)
 summary(glmFitAll8)
+plot(glmFitAll8)
+
 
 # NonLinearity 
 residualPlots(glmFitAll8,
@@ -490,10 +504,11 @@ residualPlots(glmFitAll8,
               cex=0.3,
               ylim=c(-5, 5))
 
+
+
 # Residuals
 runs.test(residuals(glmFitAll8))
-acf(residuals(glmFitAll8, type="pearson"), main="glmFitALL8")
-plot(fitted(glmFitAll8))
+
 
 
 # Poisson Model with elevation and landcover
@@ -513,6 +528,8 @@ glmFitAll12 <- glm(count ~ distance + elev + landcov,
 # Check the model 10
 car::Anova(glmFitAll10)
 summary(glmFitAll10)
+plot(glmFitAll10)
+
 
 # Collinearity
 covariates <- c('distance', "elev", "landcov")
@@ -525,7 +542,7 @@ car::vif(glmFitAll10)
 # NonLinearity 
 residualPlots(glmFitAll10,
               type="pearson",
-              terms=~.-Phase,
+              terms=~.,
               quadratic=TRUE,
               smooth=list(smoother=gamLine, col="#377eb8"),
               fitted=FALSE,
@@ -537,21 +554,20 @@ residualPlots(glmFitAll10,
 
 # Residuals
 runs.test(residuals(glmFitAll10))
-acf(residuals(glmFitAll10, type="pearson"), main="glmFitALL10")
-plot(fitted(glmFitAll10))
-plot(glmFitAll10)
 
 # Check the model 11
 car::Anova(glmFitAll12)
 summary(glmFitAll12)
+plot(glmFitAll12)
 
+# colinearity
 car::vif(glmFitAll12)
 
 
 # NonLinearity 
 residualPlots(glmFitAll12,
               type="pearson",
-              terms=~.-Phase,
+              terms=~.,
               quadratic=TRUE,
               smooth=list(smoother=gamLine, col="#377eb8"),
               fitted=FALSE,
@@ -563,21 +579,120 @@ residualPlots(glmFitAll12,
 
 # Residuals
 runs.test(residuals(glmFitAll12))
-acf(residuals(glmFitAll12, type="pearson"), main="glmFitALL12")
-plot(fitted(glmFitAll12))
-plot(glmFitAll12)
 
 # Model Selection
 options(na.action="na.fail")
-dredge <- head(dredge(glmFitAll9, rank="QAIC", chat=summary(glmFitAll10)$dispersion), n=10)
-Anova(glmFitAll10)
+dredge1 <- head(dredge(glmFitAll9, rank="QAIC", chat=summary(glmFitAll10)$dispersion), n=10)
 
-deviance(glmFitAll10)
+
+# Poisson Model with landcover
+glmFitAll13 <- glm(count ~ distance^2 + landcov, 
+                   family=poisson, data=d_all)
+# Quasipoisson Model and landcover
+glmFitAll14 <- glm(count ~ distance^2 + landcov, 
+                   family=quasipoisson, data=d_all)
+# # Check the model 10
+car::Anova(glmFitAll14)
+summary(glmFitAll14)
+plot(glmFitAll14)
+
+
+# Collinearity
+car::vif(glmFitAll14)
+
+
+# NonLinearity 
+residualPlots(glmFitAll14,
+              type="pearson",
+              terms=~.,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
+
+# Residuals
+runs.test(residuals(glmFitAll14))
+
+# Model with interaction term
+# Poisson Model with landcover and cat with distance
+glmFitAll15 <- glm(count ~ distance^2*cat + landcov + elev, 
+                   family=poisson, data=d_all)
+# Quasipoisson Model with landcover and cat with distance
+glmFitAll16 <- glm(count ~ distance^2*cat + landcov + elev, 
+                   family=quasipoisson, data=d_all)
+# Poisson Model with landcover and cat with distance
+glmFitAll17 <- glm(count ~ distance*cat + landcov + elev, 
+                   family=poisson, data=d_all)
+# Quasipoisson Model with landcover and cat with distance
+glmFitAll18 <- glm(count ~ distance*cat + landcov + elev, 
+                   family=quasipoisson, data=d_all)
+
+
+
+
+# Check the model 16
+car::Anova(glmFitAll16)
+summary(glmFitAll16)
+plot(glmFitAll16)
+
+
+
+# NonLinearity 
+residualPlots(glmFitAll16,
+              type="pearson",
+              terms=~.,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
+
+# Residuals
+runs.test(residuals(glmFitAll16))
+
+# Check the model 18
+car::Anova(glmFitAll18)
+summary(glmFitAll18)
+plot(glmFitAll18)
+
+
+
+# NonLinearity 
+?residualPlot
+residualPlots(glmFitAll18,
+              type="pearson",
+              terms=~.,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5))
+
+# Residuals
+runs.test(residuals(glmFitAll18))
+
+
+
+
+# Model Selection
+options(na.action="na.fail")
+dredge2 <- head(dredge(glmFitAll15, rank="QAIC", chat=summary(glmFitAll16)$dispersion), n=10)
+
 
 # Predict
-test <- dplyr::select(d_all, distance, elev, landcov)
+test <- dplyr::select(d_all, distance, elev, landcov, cat)
 
-predict <- predict(glmFitAll10, newdata=test, type = 'response')
+predict <- predict(glmFitAll16, newdata=test, type = 'response')
 summary(predict)
 d_pred <- d_all %>% dplyr::select(cat, distance, x, y, elev, landcov, count) %>% 
   mutate(predict=predict)
@@ -601,3 +716,6 @@ d_pred <- d_pred %>% mutate(accuracy=ifelse(abs(count-predict)<0.5, 1, 0))
 sum(d_pred$accuracy==1)/23490
 sum(d_pred$accuracy==0)/23490
 isTRUE(0.1075351+0.8924649==1)
+
+
+
