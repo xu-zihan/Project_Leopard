@@ -122,7 +122,6 @@ dist <- function(a,b,c,d) {
 }
 
 # calculate distance
-d <- d %>% mutate(distance=dist(d$x, d$y, d$mean_x, d$mean_y))
 
 # funcrion for all data
 all_dist <- function(a="a") {
@@ -152,7 +151,7 @@ d9 <- all_dist("BM7")
 
 d_all <- rbind(d1,d2,d3,d4,d5,d6,d7,d8,d9)
 
-
+#------------------------------------------------------------
 # GLM model for x1
 summary(d1$count)
 glmFit1 <- glm(count ~ distance^2, 
@@ -334,7 +333,7 @@ residualPlots(glmFit99,
               pch=19,
               cex=0.3,
               ylim=c(-5, 5))
-
+#------------------------------------------------
 
 # model for all data
 
@@ -361,7 +360,7 @@ plot(glmFitAll2)
 # NonLinearity 
 residualPlots(glmFitAll2,
               type="pearson",
-              terms=~.-Phase,
+              terms=~.,
               quadratic=TRUE,
               smooth=list(smoother=gamLine, col="#377eb8"),
               fitted=FALSE,
@@ -369,7 +368,11 @@ residualPlots(glmFitAll2,
               col="grey",
               pch=19,
               cex=0.3,
-              ylim=c(-5, 5))
+              ylim=c(-5, 5),
+              xlim=c(0,30000),
+              main="glmFitAll2")
+
+
 
 # Residuals
 runs.test(residuals(glmFitAll2))
@@ -384,7 +387,7 @@ plot(glmFitAll4)
 # NonLinearity 
 residualPlots(glmFitAll4,
               type="pearson",
-              terms=~.-Phase,
+              terms=~.,
               quadratic=TRUE,
               smooth=list(smoother=gamLine, col="#377eb8"),
               fitted=FALSE,
@@ -392,7 +395,9 @@ residualPlots(glmFitAll4,
               col="grey",
               pch=19,
               cex=0.3,
-              ylim=c(-5, 5))
+              ylim=c(-5, 5),
+              xlim=c(0,30000),
+              main="glmFitAll4")
 
 # Residuals
 runs.test(residuals(glmFitAll4))
@@ -471,7 +476,7 @@ plot(glmFitAll6)
 # NonLinearity 
 residualPlots(glmFitAll6,
               type="pearson",
-              terms=~.-Phase,
+              terms=~.,
               quadratic=TRUE,
               smooth=list(smoother=gamLine, col="#377eb8"),
               fitted=FALSE,
@@ -480,6 +485,18 @@ residualPlots(glmFitAll6,
               pch=19,
               cex=0.3,
               ylim=c(-5, 5))
+residualPlots(glmFitAll6,
+              type="pearson",
+              terms=~distance,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5),
+              xlim=c(0, 30000))
 
 # Residuals
 runs.test(residuals(glmFitAll6))
@@ -494,7 +511,7 @@ plot(glmFitAll8)
 # NonLinearity 
 residualPlots(glmFitAll8,
               type="pearson",
-              terms=~.-Phase,
+              terms=~.,
               quadratic=TRUE,
               smooth=list(smoother=gamLine, col="#377eb8"),
               fitted=FALSE,
@@ -503,6 +520,18 @@ residualPlots(glmFitAll8,
               pch=19,
               cex=0.3,
               ylim=c(-5, 5))
+residualPlots(glmFitAll8,
+              type="pearson",
+              terms=~distance,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5),
+              xlim=c(0, 30000))
 
 
 
@@ -551,6 +580,18 @@ residualPlots(glmFitAll10,
               pch=19,
               cex=0.3,
               ylim=c(-5, 5))
+residualPlots(glmFitAll10,
+              type="pearson",
+              terms=~distance,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5),
+              xlim=c(0, 30000))
 
 # Residuals
 runs.test(residuals(glmFitAll10))
@@ -576,6 +617,18 @@ residualPlots(glmFitAll12,
               pch=19,
               cex=0.3,
               ylim=c(-5, 5))
+residualPlots(glmFitAll12,
+              type="pearson",
+              terms=~distance,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5),
+              xlim=c(0, 30000))
 
 # Residuals
 runs.test(residuals(glmFitAll12))
@@ -613,6 +666,20 @@ residualPlots(glmFitAll14,
               pch=19,
               cex=0.3,
               ylim=c(-5, 5))
+residualPlots(glmFitAll14,
+              type="pearson",
+              terms=~distance,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5),
+              xlim=c(0, 30000))
+
+
 
 # Residuals
 runs.test(residuals(glmFitAll14))
@@ -654,6 +721,19 @@ residualPlots(glmFitAll16,
               cex=0.3,
               ylim=c(-5, 5))
 
+
+residualPlots(glmFitAll16,
+              type="pearson",
+              terms=~distance,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5),
+              xlim=c(0, 100000))
 # Residuals
 runs.test(residuals(glmFitAll16))
 
@@ -665,7 +745,6 @@ plot(glmFitAll18)
 
 
 # NonLinearity 
-?residualPlot
 residualPlots(glmFitAll18,
               type="pearson",
               terms=~.,
@@ -677,6 +756,18 @@ residualPlots(glmFitAll18,
               pch=19,
               cex=0.3,
               ylim=c(-5, 5))
+residualPlots(glmFitAll18,
+              type="pearson",
+              terms=~distance,
+              quadratic=TRUE,
+              smooth=list(smoother=gamLine, col="#377eb8"),
+              fitted=FALSE,
+              col.quad="#e41a1c",
+              col="grey",
+              pch=19,
+              cex=0.3,
+              ylim=c(-5, 5),
+              xlim=c(0, 100000))
 
 # Residuals
 runs.test(residuals(glmFitAll18))
