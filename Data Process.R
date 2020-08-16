@@ -87,8 +87,8 @@ cord0 <- data1 %>% dplyr::select(x,y,z, mean_x, mean_y)
 # transfer coordinates to utm structure
 library(rgdal)
 cord <- project(as.matrix(cord0[,c("x","y")]), "+proj=utm +zone=34 +south +ellps=WGS84 +towgs84=0,0,0,-0,-0,-0,0")
-plot(cord)
-
+plot(cord, xlab="UTM Zone 34", ylab="UTM Zone 34", pch=20)
+?plot
 mean_cord <- project(as.matrix(cord0[,c("mean_x","mean_y")]),
                      "+proj=utm +zone=34 +south +ellps=WGS84 +towgs84=0,0,0,-0,-0,-0,0")
 
@@ -108,7 +108,7 @@ tab <- table(cellFromXY(r, cord))
 tab
 r[as.numeric(names(tab))] <- tab
 r
-plot(r)
+plot(r, xlab="UTM Zone 34", ylab="UTM Zone 34", main="count in each pixel with centroid")
 points(mean_cord$mean_x,mean_cord$mean_y, pch=20)
 # create dataset for amount of point in each pixel
 d <- data.frame(coordinates(r), count=r[])
@@ -151,189 +151,6 @@ d9 <- all_dist("BM7")
 
 d_all <- rbind(d1,d2,d3,d4,d5,d6,d7,d8,d9)
 
-#------------------------------------------------------------
-# GLM model for x1
-summary(d1$count)
-glmFit1 <- glm(count ~ distance^2, 
-               family=poisson, data=d1)
-summary(glmFit1)
-glmFit11 <- glm(count ~ distance^2, 
-               family=quasipoisson, data=d1)
-summary(glmFit11)
-
-library(car)
-residualPlots(glmFit11,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-
-# model for x2
-glmFit2 <- glm(count ~ distance^2, 
-               family=poisson, data=d2)
-summary(glmFit2)
-glmFit22 <- glm(count ~ distance^2, 
-               family=quasipoisson, data=d2)
-summary(glmFit22)
-residualPlots(glmFit2,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-
-# model for x3
-glmFit3 <- glm(count ~ distance^2, 
-               family=poisson, data=d3)
-summary(glmFit3)
-glmFit33 <- glm(count ~ distance^2, 
-                family=quasipoisson, data=d3)
-summary(glmFit33)
-residualPlots(glmFit33,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-
-# model for x4
-glmFit4 <- glm(count ~ distance^2, 
-               family=poisson, data=d4)
-summary(glmFit4)
-glmFit44 <- glm(count ~ distance^2, 
-                family=quasipoisson, data=d4)
-summary(glmFit44)
-residualPlots(glmFit44,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-
-# model for x5
-glmFit5 <- glm(count ~ distance^2, 
-               family=poisson, data=d5)
-summary(glmFit5)
-glmFit55 <- glm(count ~ distance^2, 
-                family=quasipoisson, data=d5)
-summary(glmFit55)
-residualPlots(glmFit55,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-
-# model for x6
-glmFit6 <- glm(count ~ distance^2, 
-               family=poisson, data=d6)
-summary(glmFit6)
-glmFit66 <- glm(count ~ distance^2, 
-                family=quasipoisson, data=d6)
-summary(glmFit66)
-residualPlots(glmFit6,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-
-# model for x7
-glmFit7 <- glm(count ~ distance^2, 
-               family=poisson, data=d7)
-summary(glmFit7)
-glmFit77 <- glm(count ~ distance^2, 
-                family=quasipoisson, data=d7)
-summary(glmFit77)
-residualPlots(glmFit77,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-
-# model for x8
-glmFit8 <- glm(count ~ distance^2, 
-               family=poisson, data=d8)
-summary(glmFit8)
-glmFit88 <- glm(count ~ distance^2, 
-                family=quasipoisson, data=d8)
-summary(glmFit88)
-residualPlots(glmFit88,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-
-
-# model for x9
-glmFit9 <- glm(count ~ distance^2, 
-               family=poisson, data=d9)
-summary(glmFit9)
-glmFit99 <- glm(count ~ distance^2, 
-                family=quasipoisson, data=d9)
-summary(glmFit99)
-residualPlots(glmFit99,
-              type="pearson",
-              terms=~.-Phase,
-              quadratic=TRUE,
-              smooth=list(smoother=gamLine, col="#377eb8"),
-              fitted=FALSE,
-              col.quad="#e41a1c",
-              col="grey",
-              pch=19,
-              cex=0.3,
-              ylim=c(-5, 5))
-#------------------------------------------------
 
 # model for all data
 
@@ -415,7 +232,7 @@ elev90
 new_elev <- crop(extend(elev90, r), r)
 new_elev
 r
-plot(new_elev)
+plot(new_elev, xlab="UTM Zone 34", ylan="UTM Zone 34", main="elevation in pixel with centroid")
 points(mean_cord$mean_x,mean_cord$mean_y, pch=20)
 
 # Landcover
@@ -425,7 +242,7 @@ landcov
 new_land <- crop(extend(landcov, r), r)
 new_land
 r
-plot(new_land)
+plot(new_land,xlab="UTM Zone 34", ylab="UTM Zone 34", main="landcover in pixel with centroid")
 points(mean_cord$mean_x,mean_cord$mean_y, pch=20)
 
 # Land cover data
@@ -434,9 +251,10 @@ d_all <- d_all %>% mutate(elev=coodelev) %>% mutate(landcov=coodlandcov)
 
 # data plot
 # Plot for parameters with count
-plot(d_all$landcov, d_all$count, type="p")
-plot(d_all$elev, d_all$count)
-plot(d_all$distance, d_all$count)
+plot(d_all$landcov, d_all$count, pch=20, xlab="landcover", ylab="count", 
+     main="count vs landcover")
+plot(d_all$elev, d_all$count, pch=20)
+plot(d_all$distance, d_all$count, pch=20, xlab="distance", ylab="count", main="count vs distance")
 (unique(d_all$cat))
 
 # plot for each cat with distance
@@ -446,7 +264,7 @@ plt_all <- function(){
   while(i <=9) {
     xq <- list[i]
     data <- filter(d_all, cat==xq)
-    plot(data$distance, data$count, main=xq)
+    plot(data$distance, data$count, main=xq, xlab="distance", ylab="count", pch=20)
     i <- i+1
   }
 }
@@ -579,7 +397,7 @@ residualPlots(glmFitAll10,
               col="grey",
               pch=19,
               cex=0.3,
-              ylim=c(-5, 5))
+              ylim=c(-1000, 1000))
 residualPlots(glmFitAll10,
               type="pearson",
               terms=~distance,
@@ -719,7 +537,7 @@ residualPlots(glmFitAll16,
               col="grey",
               pch=19,
               cex=0.3,
-              ylim=c(-5, 5))
+              ylim=c(-10, 10))
 
 
 residualPlots(glmFitAll16,
@@ -799,6 +617,10 @@ plot(d_pred$elev, d_pred$predict)
 # Landcover
 plot(d_pred$landcov, d_pred$count)
 plot(d_pred$landcov, d_pred$predict)
+
+# heatmap
+require(fields)
+quilt.plot(d_pred$x, d_pred$y, d_pred$predict, nrow=30, ncol=87)
 
 # Confuse Matrix
 
