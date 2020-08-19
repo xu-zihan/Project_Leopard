@@ -15,6 +15,7 @@ x1 <- x1 %>% rename(y = Latitude, x = Longitude, z = Elevation) %>%
   mutate(cat = "BF8", type = "dropoff_retrived") %>% drop_na(x)
 
 x1$daytime <- gsub("_", " ", x1$daytime)
+
 x1$daytime <- ymd_hms(x1$daytime)
 class(x1$daytime)
 
@@ -37,6 +38,7 @@ summary(is.na(x1))
 
 x2 <- read.csv("BM4_Vectronix.csv")
 x2 <- process(x2, "BM4", "dropoff_retrived", "Vec")
+
 summary(is.na(x2))
 
 x3 <- read.csv("BM5_Vectronix.csv")
@@ -600,27 +602,47 @@ dredge2 <- head(dredge(glmFitAll15, rank="QAIC", chat=summary(glmFitAll16)$dispe
 
 # Predict
 test <- dplyr::select(d_all, distance, elev, landcov, cat)
+# Residuals
+pr <- residuals(glmFitAll16, type="pearson")
 
 predict <- predict(glmFitAll16, newdata=test, type = 'response')
 summary(predict)
 d_pred <- d_all %>% dplyr::select(cat, distance, x, y, elev, landcov, count) %>% 
-  mutate(predict=predict)
+  mutate(predict=predict) %>% mutate(residual=pr)
+
+m_pred1 <- group_by(d_pred, x, y) %>% summarize(m_residual = mean(residual))
+m_pred2 <- group_by(d_pred, x, y) %>% summarize(m_count = sum(count))
+m_pred3 <- group_by(d_pred, x, y) %>% summarize(m_predict = sum(predict))
+
+m_pred <- left_join(m_pred1, m_pred2, by=c("x", "y"))
+m_pred <- left_join(m_pred, m_pred3, by=c("x", "y"))
+m_cat <- d_pred %>% dplyr::filter(cat=="BF8") %>% dplyr::select(x,y,elev,landcov)
+m_pred <- left_join(m_pred, m_cat, by=c("x", "y"))
+
+
 
 # Plot comparison
 # Distance
 par(mfrow=c(1,2))
-plot(d_pred$distance, d_pred$count)
-plot(d_pred$distance, d_pred$predict)
+plot(d_pred$distance, d_pred$count, xlab="distance", ylab="count", main="data")
+plot(d_pred$distance, d_pred$predict,xlab="distance", ylab="count", main="prediction")
 # Elevation
-plot(d_pred$elev, d_pred$count)
-plot(d_pred$elev, d_pred$predict)
+plot(d_pred$elev, d_pred$count,xlab="elevation", ylab="count", main="data")
+plot(d_pred$elev, d_pred$predict,xlab="elevation", ylab="count", main="prediction")
 # Landcover
-plot(d_pred$landcov, d_pred$count)
-plot(d_pred$landcov, d_pred$predict)
+plot(d_pred$landcov, d_pred$count,xlab="landcover", ylab="count", main="data")
+plot(d_pred$landcov, d_pred$predict,xlab="landcover", ylab="count", main="prediction")
 
 # heatmap
 require(fields)
-quilt.plot(d_pred$x, d_pred$y, d_pred$predict, nrow=30, ncol=87)
+quilt.plot(d_pred$x, d_pred$y, d_pred$count, nrow=30, ncol=87, col = rev(terrain.colors(100)),
+           xlab="UTM Zone 34", ylab="UTM Zone 34", main="count")
+quilt.plot(d_pred$x, d_pred$y, d_pred$predict, nrow=30, ncol=87, col = rev(terrain.colors(100)),
+           xlab="UTM Zone 34", ylab="UTM Zone 34", main="prediction")
+quilt.plot(d_pred$x, d_pred$y, d_pred$elev, nrow=30, ncol=87, col = rev(terrain.colors(100)),
+           xlab="UTM Zone 34", ylab="UTM Zone 34", main="elevation")
+quilt.plot(d_pred$x, d_pred$y, d_pred$landcov, nrow=30, ncol=87, col = rev(terrain.colors(100)),
+           xlab="UTM Zone 34", ylab="UTM Zone 34", main="landcover")
 
 # Confuse Matrix
 
@@ -629,6 +651,4 @@ d_pred <- d_pred %>% mutate(accuracy=ifelse(abs(count-predict)<0.5, 1, 0))
 sum(d_pred$accuracy==1)/23490
 sum(d_pred$accuracy==0)/23490
 isTRUE(0.1075351+0.8924649==1)
-
-
 
